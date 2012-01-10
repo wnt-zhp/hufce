@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.test import TestCase
 __LICENSE__ = u"""
     This file is part of Hufrce Program.
 
@@ -36,9 +35,43 @@ __LICENSE__ = u"""
 """
 
 
+
+
+from django.test import TestCase
+
+import models
+
 class SimpleTest(TestCase):
     def test_basic_addition(self):
         """
         Tests that 1 + 1 always equals 2.
         """
         self.assertEqual(1 + 1, 2)
+
+
+
+class RegisteryTest(TestCase):
+
+    def create_registry(self):
+        sb = models.ScoutBookRegistry()
+        sb.book_no = 'xxx'
+        sb.name = 'name'
+        sb.surname = 'surname'
+        return sb
+
+
+    def testSimpleSave(self):
+        sb = self.create_registry()
+        sb.save()
+
+    def testSaveHistory(self):
+        sb = self.create_registry()
+        sb.save()
+        sb_new = models.ScoutBookRegistry.objects.get(pk = sb.pk)
+        self.assertEquals(len(sb_new.history.all()), 0)
+        sb.save()
+        self.assertEquals(len(sb_new.history.all()), 1)
+
+
+
+

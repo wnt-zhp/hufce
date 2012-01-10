@@ -48,11 +48,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'hufce_dev',                      # Or path to database file if using sqlite3.
-        'USER': 'jb',                      # Not used with sqlite3.
-        'PASSWORD': 'foo',                  # Not used with sqlite3.
+        'USER': 'jb',
+        'PASSWORD': 'foo',
         'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '5432',                      # Set to empty string for default. Not used with sqlite3.
+        'TEST_NAME' : 'default_test'
     },
+    'default_test' : {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'hufce_test',
+    }
+
 }
 
 # Local time zone for this installation. Choices can be found here:
@@ -150,7 +156,9 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
-    'hufce.hufcemain',
+    'hufcemain',
+    'registry',
+    'south'
 )
 
 # A sample logging configuration. The only tangible logging
