@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, include, url
+# -*- coding: utf-8 -*-
 
 __LICENSE__ = u"""
     This file is part of Hufrce Program.
@@ -37,6 +37,8 @@ __LICENSE__ = u"""
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+from django.conf.urls.defaults import patterns, include, url
+
 admin.autodiscover()
 
 urlpatterns = patterns('',

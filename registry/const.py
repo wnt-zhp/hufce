@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 __LICENSE__ = u"""
     This file is part of Hufrce Program.
 
@@ -35,37 +34,6 @@ __LICENSE__ = u"""
     Place, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
-from django.db import models
-from record_registry import create_record_types_abstract_model
-from const import CHAR_FIELD_MAX_LEN
+__author__ = 'jb'
 
-DICTIONARY_CHOICES = (
-    ('Srodowisko', 'Srodowisko'),
-    ('Troop', 'Troop')
-)
-
-
-class Dictionary(models.Model):
-
-    name = models.CharField(max_length=CHAR_FIELD_MAX_LEN, verbose_name="Nazwa")
-    active = models.BooleanField(verbose_name="Aktywny", help_text="Czy dany rekord może być przypisywany do innych obiektów")
-    type = models.CharField(max_length=CHAR_FIELD_MAX_LEN, choices=DICTIONARY_CHOICES)
-
-
-class ScoutBook(models.Model):
-    class Meta:
-        abstract = True
-
-    name = models.CharField(max_length=CHAR_FIELD_MAX_LEN)
-    surname = models.CharField(max_length=CHAR_FIELD_MAX_LEN)
-    srodowisko = models.ForeignKey('Dictionary', limit_choices_to={'type' : 'Srodowisko'}, related_name='+', blank=True, null=True)
-    troop = models.ForeignKey('Dictionary', limit_choices_to={'type' : 'Troop'},  related_name='+', blank=True, null=True)
-    book_no = models.CharField(max_length=CHAR_FIELD_MAX_LEN)
-    issue_date = models.DateField(blank=True, null=True)
-
-ScoutBookRegistry, ScoutBookHistory = create_record_types_abstract_model(
-    ScoutBook, 'ScoutBookRegistry', 'ScoutBookHistory')
-
-
-
-
+CHAR_FIELD_MAX_LEN = 250
