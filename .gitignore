@@ -1,0 +1,7 @@
+# Pliki skompilowane
+*.pyc
+*.pyo
+#Pliki backup
+.*~
+#Pliki svn
+**.svn**
