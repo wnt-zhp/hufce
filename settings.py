@@ -1,5 +1,5 @@
 # Django settings for hufce project.
-
+# -*- coding: utf-8 -*-
 __LICENSE__ = u"""
     This file is part of Hufrce Program.
 
