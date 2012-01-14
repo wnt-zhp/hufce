@@ -41,8 +41,8 @@ from django.db import models
 from django.db.models.base import ModelBase
 
 
-class RecordBase(models.Model):
 
+class RecordBase(models.Model):
     class Meta:
             abstract = True
 
@@ -76,15 +76,28 @@ class RecordHistoryBase(models.Model):
         super(RecordHistoryBase, self).save(force_insert, force_update, using)
 
 
-def create_record_types_abstract_model(AbstractModel, record_name, history_name):
 
-    Record = ModelBase(record_name, (AbstractModel, RecordBase), {'__module__' : AbstractModel.__module__})
+
+def create_record_types_abstract_model(AbstractModel, record_name, history_name, registry_meta = None, history_meta = None):
+    class Meta:
+        pass
+    if not registry_meta:
+        registry_meta = Meta
+    if not history_meta:
+        history_meta = Meta
+
+    Record = ModelBase(record_name, (AbstractModel, RecordBase), {
+        '__module__' : AbstractModel.__module__,
+        'Meta' : registry_meta,
+        'is_history_model' : False})
     RecordHistory = ModelBase(history_name, (AbstractModel, RecordHistoryBase), {
         "parent_instance" :
             models.ForeignKey(Record, blank=False, null=False, related_name='history'),
-        '__module__' : AbstractModel.__module__
+        '__module__' : AbstractModel.__module__,
+        'Meta' : history_meta,
+        'is_history_model' : True
     })
-    
+
 #    class Record(AbstractModel, RecordBase):
 #        pass
 #
@@ -95,8 +108,5 @@ def create_record_types_abstract_model(AbstractModel, record_name, history_name)
 
     Record.__name__ = record_name
     RecordHistory.__name__ = history_name
-
-    Record._meta.object_name = record_name
-    RecordHistory._meta.object_name = history_name
 
     return Record, RecordHistory

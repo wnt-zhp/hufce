@@ -158,7 +158,8 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'hufcemain',
     'registry',
-    'south'
+    'south',
+    'registry_engine'
 )
 
 # A sample logging configuration. The only tangible logging
