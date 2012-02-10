@@ -42,7 +42,6 @@ __LICENSE__ = u"""
     Place, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
-
 import copy
 import datetime
 
@@ -57,11 +56,15 @@ MODE_NO = 'none'
 MODE_ON_HISTORY_TABLE = 'history'
 MODE_ALWAYS = 'always'
 
+from _south import try_initialize_south
+try_initialize_south()
+
 __FIELD_ATTRS = (
     'verbose_name', 'name', 'primary_key', 'max_length', 'unique', 'blank', 'null', 'db_index',
-    'rel', 'default', 'editable', 'serialize', 'unique_for_date', 'unique_for_month', 'unique_for_year',
-    'choices', 'help_text', 'db_column', 'db_tablespace',  'validators', 'error_messages'
-)
+    'rel', 'default', 'editable', 'serialize', 'unique_for_date', 'unique_for_month',
+    'unique_for_year',
+    'choices', 'help_text', 'db_column', 'db_tablespace', 'validators', 'error_messages'
+    )
 
 def __get_field_attrs(field):
     attrs = {}
@@ -70,27 +73,79 @@ def __get_field_attrs(field):
 
     return attrs
 
-def _create_new_fk(field, cls, **kwargs):
+
+def _create_new_fk(field, cls = ForeignKey, **kwargs):
     attrs = __get_field_attrs(field)
     attrs.update(kwargs)
     return cls(**attrs)
 
-def _get_to(app_label, to):
-    if isinstance(to, str):
-         splitted = to.split('.')
-         if len(splitted) == 1:
-             rel_to = get_model(app_label, splitted[0])
-         else:
-             rel_to = get_model(splitted[0], splitted[1])
-         return rel_to
-    return to
+
+def _get_model(model, app_label = None):
+    """
+    Returns model class
+    :param app_label:
+    :param model: Either model class (in this case it is passed unchanged), or model name in format:
+        "app_label.ModelName" or "ModelName". If second format is passed app_label defaults to
+        value of 'app_label` parameter.
+    :return: Returns model class
+    """
+    if isinstance(model, str):
+        splitted = model.split('.')
+        if len(splitted) == 1:
+            rel_to = get_model(app_label, splitted[0])
+        else:
+            rel_to = get_model(splitted[0], splitted[1])
+        return rel_to
+    if isinstance(model, models.Model):
+        return type(model)
+    return model
 
 
+def get_history_parent(model, app_label = None):
+    """
+    Returns model class that represents parent model for history model.
+
+    If `model` represents a model class that is either History parent (that is a model for which
+    field of type HistoricalRecords is defined, or a Historical model (model that holds history of
+    HistoryParent). In this case history parent is returned.
+
+    If normal model instance is passed ValueError is raised).
+
+
+    :param app_label:
+    :param model:
+    :return:
+    """
+
+    model = _get_model(model, app_label)
+    try:
+        meta = model._history_meta
+    except AttributeError:
+        raise ValueError('Model %s passed to get_history_parent is neither history parent not history model' % model)
+    return meta.ParentModel
+
+def get_history_model(model, app_label = None):
+    model = _get_model(model, app_label)
+    try:
+        meta = model._history_meta
+    except AttributeError:
+        raise ValueError('Model %s passed to get_history_parent is neither history parent not history model')
+    return meta.HistoryModel
+
+def get_current_parent(model):
+    """
+        Gets current instance of parent model given history model
+    :param model:
+    :return:
+    """
+    parent = get_history_parent(model)
+    return getattr(model, parent.pk.attname)
+
+class KeyToHistoryMarker(ForeignKey):
+    pass
 
 class HistoricalForeignKey(ForeignKey):
 
-    class KeyToHistoryMarker(ForeignKey):
-        pass
 
     def __init__(self, to, *largs, **kwargs):
         super(HistoricalForeignKey, self).__init__(to, *largs, **kwargs)
@@ -101,27 +156,46 @@ class HistoricalForeignKey(ForeignKey):
 
     def check_history_object(self, **kwargs):
         rel_to = self.rel.to
-        rel_to = _get_to(self.model._meta.app_label, rel_to)
-        if getattr(rel_to, '_history_meta', None) is None:
-            raise ValueError("HistoricalForeignKey %s.%s is pointing to class '%s' that has no history manager" % (self.model.__name__, self.name, rel_to.__name__))
+        rel_to = _get_model(rel_to, self.model._meta.app_label)
+
+#        if getattr(rel_to, '_history_meta', None) is None:
+#            raise ValueError(
+#                "HistoricalForeignKey %s.%s is pointing to class '%s' that has no history manager" % (
+#                    self.model.__name__, self.name, rel_to.__name__))
+
+class ConvertToHistoryForeignKey(ForeignKey):
+    check_history_object = HistoricalForeignKey.check_history_object
+    contribute_to_class = HistoricalForeignKey.contribute_to_class
+
+    def __init__(self, to, *largs, **kwargs):
+        super(ConvertToHistoryForeignKey, self).__init__(to, *largs, **kwargs)
+
+    def formfield(self, **kwargs):
+        return super(ConvertToHistoryForeignKey, self).formfield(**kwargs)
 
 class HistoricalOptions(object):
-    def __init__(self, app_name, history_manager_name, history_model_name):
+    def __init__(self, app_name, parent_model_name, history_manager_name, history_model_name,
+                 is_parent):
         super(HistoricalOptions, self).__init__()
         self.app_name = app_name
-        self.history_manager_name=history_manager_name
-        self.history_object_name=history_model_name
+        self.history_manager_name = history_manager_name
+        self.parent_model_name = parent_model_name
+        self.history_object_name = history_model_name
+        self.is_parent = is_parent
+        self.is_child = not is_parent
 
     @property
     def HistoryModel(self):
         return get_model(self.app_name, self.history_object_name)
 
+    @property
+    def ParentModel(self):
+        return get_model(self.app_name, self.parent_model_name)
 
 class HistoricalRecords(object):
     def contribute_to_class(self, cls, name):
-        self.manager_name =name
+        self.manager_name = name
         models.signals.class_prepared.connect(self.finalize, sender=cls)
-
 
     def finalize(self, sender, **kwargs):
         self.app_name = sender._meta.app_label
@@ -137,17 +211,27 @@ class HistoricalRecords(object):
 
         descriptor = manager.HistoryDescriptor(history_model)
         setattr(sender, self.manager_name, descriptor)
-        setattr(sender, '_history_meta', HistoricalOptions(self.app_name, self.manager_name, history_model._meta.object_name))
+        setattr(sender, '_history_meta', self.create_history_options(sender, True))
 
-    def create_history_model(self, model):
+    def history_model_name(self, parent_model):
+        return 'Historical%s' % parent_model._meta.object_name
+
+    def create_history_options(self, model, is_parent):
+        return  HistoricalOptions(self.app_name, model._meta.object_name, self.manager_name,
+                                                        self.history_model_name(model), is_parent)
+
+    def create_history_model(self, parent_model):
         """
         Creates a historical model to associate with the model provided.
         """
-        attrs = self.copy_fields(model)
-        attrs.update(self.get_extra_fields(model))
-        attrs.update(Meta=type('Meta', (), self.get_meta_options(model)))
-        name = 'Historical%s' % model._meta.object_name
-        return type(name, (models.Model,), attrs)
+        attrs = self.copy_fields(parent_model)
+        attrs.update(self.get_extra_fields(parent_model))
+        attrs.update(Meta=type('Meta', (), self.get_meta_options(parent_model)))
+        name = self.history_model_name(parent_model)
+
+        historical_model_class = type(name, (models.Model,), attrs)
+        setattr(historical_model_class, '_history_meta', self.create_history_options(parent_model, False))
+        return historical_model_class
 
     def copy_fields(self, model):
         """
@@ -166,18 +250,23 @@ class HistoricalRecords(object):
                 # existing one must be replaced with an IntegerField.
                 field.__class__ = models.IntegerField
 
-            if field.primary_key or field.unique:
+            if field.unique:
                 # Unique fields can no longer be guaranteed unique,
                 # but they should still be indexed for faster lookups.
-                field.primary_key = False
                 field._unique = False
                 field.db_index = True
 
+            if field.primary_key:
+                field_ = _create_new_fk(field, to = model,
+                                        related_name = '+',
+                                        primary_key=False, unique=False, db_index = True)
+                field = field_
+
             if isinstance(field, HistoricalForeignKey):
                 rel_class = type(field.rel)
-                rel_to = _get_to(model._meta.app_label, field.rel.to)
-                field = _create_new_fk(field, HistoricalForeignKey.KeyToHistoryMarker,
-                                        to = rel_to._history_meta.HistoryModel, rel_class = rel_class)
+                rel_to = _get_model(field.rel.to, model._meta.app_label)
+                field = _create_new_fk(field, KeyToHistoryMarker,
+                                       to=rel_to._history_meta.HistoryModel, rel_class=rel_class)
 
             fields[field.name] = field
 
@@ -196,9 +285,9 @@ class HistoricalRecords(object):
             'history_type': models.CharField(max_length=1, choices=(
                 ('+', 'Created'),
                 ('~', 'Changed'),
-                ('-', 'Deleted'),
-            )),
-            'current' : models.BooleanField(editable=False, default=False),
+                ('-', 'Deleted'))
+            ),
+            'current': models.BooleanField(editable=False, default=False),
             'history_object': HistoricalObjectDescriptor(model),
             '__unicode__': lambda self: u'%s as of %s' % (self.history_object,
                                                           self.history_date)
@@ -211,7 +300,7 @@ class HistoricalRecords(object):
         """
         return {
             'ordering': ('-history_date',),
-        }
+            }
 
     def post_save(self, instance, created, **kwargs):
         self.create_historical_record(instance, created and '+' or '~')
@@ -223,11 +312,14 @@ class HistoricalRecords(object):
         manager = getattr(instance, self.manager_name)
         attrs = {}
         for field in instance._meta.fields:
-            if isinstance(field, HistoricalForeignKey.KeyToHistoryMarker):
+            if field.primary_key:
+              attrs[field.attname] = instance
+            elif isinstance(field, KeyToHistoryMarker):
                 related_instance = getattr(instance, field.attname)
                 result = None
                 if related_instance is not None:
-                    history_manager = getattr(related_instance, type(related_instance)._meta.custom_history_manager_name)
+                    history_manager = getattr(related_instance, type(
+                        related_instance)._meta.custom_history_manager_name)
                     result = history_manager.most_recent()
                 attrs[field.attname] = result
             else:
@@ -236,6 +328,7 @@ class HistoricalRecords(object):
         attrs['current'] = True
         manager.create(history_type=type, **attrs)
 
+
 class HistoricalObjectDescriptor(object):
     def __init__(self, model):
         self.model = model
@@ -243,14 +336,3 @@ class HistoricalObjectDescriptor(object):
     def __get__(self, instance, owner):
         values = (getattr(instance, f.attname) for f in self.model._meta.fields)
         return self.model(*values)
-
-
-class TestHistorySimple(models.Model):
-
-    test_field = models.CharField(max_length=250)
-    history = HistoricalRecords()
-
-class TestRelatedTo(models.Model):
-
-    test_field = models.CharField(max_length=250)
-    history = HistoricalRecords()
