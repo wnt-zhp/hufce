@@ -1,165 +1,18 @@
 # encoding: utf-8
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
+from django.core.management import call_command
 
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        
-        # Adding model 'Dictionary'
-        db.create_table('registry_dictionary', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('active', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('type', self.gf('django.db.models.fields.CharField')(max_length=250)),
-        ))
-        db.send_create_signal('registry', ['Dictionary'])
-
-        # Adding model 'HistoricalScoutBook'
-        db.create_table('registry_historicalscoutbook', (
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('surname', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('srodowisko', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['registry.Dictionary'])),
-            ('troop', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
-            ('book_no', self.gf('django.db.models.fields.CharField')(max_length=250, db_index=True)),
-            ('issue_date', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('id', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', blank=True, to=orm['registry.ScoutBook'])),
-            ('history_id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('history_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, db_index=True, blank=True)),
-            ('history_user', self.gf('current_user.models.CurrentUserField')(related_name='_scoutbook_history', null=True, to=orm['auth.User'])),
-            ('history_type', self.gf('django.db.models.fields.CharField')(max_length=1)),
-            ('current', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal('registry', ['HistoricalScoutBook'])
-
-        # Adding model 'ScoutBook'
-        db.create_table('registry_scoutbook', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('surname', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('srodowisko', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['registry.Dictionary'])),
-            ('troop', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
-            ('book_no', self.gf('django.db.models.fields.CharField')(unique=True, max_length=250)),
-            ('issue_date', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-        ))
-        db.send_create_signal('registry', ['ScoutBook'])
-
-        # Adding model 'HistoricalUprawnienie'
-        db.create_table('registry_historicaluprawnienie', (
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('surname', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('uprawnienie', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
-            ('rozkaz', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('srodowisko', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['registry.Dictionary'])),
-            ('id', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', blank=True, to=orm['registry.Uprawnienie'])),
-            ('history_id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('history_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, db_index=True, blank=True)),
-            ('history_user', self.gf('current_user.models.CurrentUserField')(related_name='_uprawnienie_history', null=True, to=orm['auth.User'])),
-            ('history_type', self.gf('django.db.models.fields.CharField')(max_length=1)),
-            ('current', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal('registry', ['HistoricalUprawnienie'])
-
-        # Adding model 'Uprawnienie'
-        db.create_table('registry_uprawnienie', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('surname', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('uprawnienie', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
-            ('rozkaz', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('srodowisko', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['registry.Dictionary'])),
-        ))
-        db.send_create_signal('registry', ['Uprawnienie'])
-
-        # Adding model 'HistoricalAdress'
-        db.create_table('registry_historicaladress', (
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('no', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('street', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('city', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
-            ('postalcode', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('id', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', blank=True, to=orm['registry.Adress'])),
-            ('history_id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('history_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, db_index=True, blank=True)),
-            ('history_user', self.gf('current_user.models.CurrentUserField')(related_name='_adress_history', null=True, to=orm['auth.User'])),
-            ('history_type', self.gf('django.db.models.fields.CharField')(max_length=1)),
-            ('current', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal('registry', ['HistoricalAdress'])
-
-        # Adding model 'Adress'
-        db.create_table('registry_adress', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('no', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('street', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('city', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
-            ('postalcode', self.gf('django.db.models.fields.CharField')(max_length=250)),
-        ))
-        db.send_create_signal('registry', ['Adress'])
-
-        # Adding model 'HistoricalCorresponcence'
-        db.create_table('registry_historicalcorresponcence', (
-            ('data', self.gf('django.db.models.fields.DateField')()),
-            ('subject', self.gf('django.db.models.fields.TextField')()),
-            ('institution_no', self.gf('django.db.models.fields.CharField')(max_length=250, null=True, blank=True)),
-            ('remarks', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('status', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
-            ('responsible', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['auth.User'])),
-            ('number', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', blank=True, to=orm['registry.Corresponcence'])),
-            ('adress', self.gf('historical.models.KeyToHistoryMarker')(to=orm['registry.HistoricalAdress'])),
-            ('history_id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('history_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, db_index=True, blank=True)),
-            ('history_user', self.gf('current_user.models.CurrentUserField')(related_name='_corresponcence_history', null=True, to=orm['auth.User'])),
-            ('history_type', self.gf('django.db.models.fields.CharField')(max_length=1)),
-            ('current', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal('registry', ['HistoricalCorresponcence'])
-
-        # Adding model 'Corresponcence'
-        db.create_table('registry_corresponcence', (
-            ('number', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('data', self.gf('django.db.models.fields.DateField')()),
-            ('adress', self.gf('historical.models.HistoricalForeignKey')(to=orm['registry.Adress'])),
-            ('subject', self.gf('django.db.models.fields.TextField')()),
-            ('institution_no', self.gf('django.db.models.fields.CharField')(max_length=250, null=True, blank=True)),
-            ('remarks', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('status', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
-            ('responsible', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['auth.User'])),
-        ))
-        db.send_create_signal('registry', ['Corresponcence'])
+        call_command("hufce_import_cities")
 
 
     def backwards(self, orm):
-        
-        # Deleting model 'Dictionary'
-        db.delete_table('registry_dictionary')
-
-        # Deleting model 'HistoricalScoutBook'
-        db.delete_table('registry_historicalscoutbook')
-
-        # Deleting model 'ScoutBook'
-        db.delete_table('registry_scoutbook')
-
-        # Deleting model 'HistoricalUprawnienie'
-        db.delete_table('registry_historicaluprawnienie')
-
-        # Deleting model 'Uprawnienie'
-        db.delete_table('registry_uprawnienie')
-
-        # Deleting model 'HistoricalAdress'
-        db.delete_table('registry_historicaladress')
-
-        # Deleting model 'Adress'
-        db.delete_table('registry_adress')
-
-        # Deleting model 'HistoricalCorresponcence'
-        db.delete_table('registry_historicalcorresponcence')
-
-        # Deleting model 'Corresponcence'
-        db.delete_table('registry_corresponcence')
+        "Write your backwards methods here."
 
 
     models = {

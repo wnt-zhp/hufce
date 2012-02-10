@@ -41,6 +41,13 @@ import models
 
 import forms
 
+from django.db.models.loading import get_model
+
+
+class DictionaryAdmin(admin.ModelAdmin):
+    list_filter = [
+        'type', 'active'
+    ]
 
 class ScoutBookAdmin(admin.ModelAdmin):
     list_display = [
@@ -55,7 +62,7 @@ class ScoutBookAdmin(admin.ModelAdmin):
 
 
 class ScoutBookHistoryAdminInline(admin.TabularInline):
-    model = models.ScoutBookHistory
+    model = get_model("registry", "HistoricalScoutBook")
     extra = 0
     can_delete = False
     max_num = 0
@@ -67,9 +74,9 @@ class ScoutBookRegistryAdmin(ScoutBookAdmin):
     inlines = [ScoutBookHistoryAdminInline]
     form = forms.ScoutForm
 
-
+#
 class UprawkoHistoryInline(admin.TabularInline):
-    model = models.UprawnienieRegistryHistory
+    model = get_model("registry", "HistoricalUprawnienie")
     extra = 0
     can_delete = False
     max_num = 0
@@ -92,11 +99,30 @@ class UprawkoAdmin(admin.ModelAdmin):
     inlines = [UprawkoHistoryInline]
 
 
+class ModelChoiceField(admin.ModelAdmin):
+    pass
 
-admin.site.register(models.Dictionary)
+class CorrespondenceAdmin(admin.ModelAdmin):
+    form = forms.CorrespondenceForm
+    readonly_fields = ('number', )
+    fields = (
+                'number',
+                'data',
+                'adress',
+                'status',
+                'responsible',
+                'institution_no',
+                'remarks'
+            )
+
+admin.site.register(models.Dictionary, DictionaryAdmin)
 
 #admin.site.register(models.ScoutBookHistoryAdminInline, ScoutBookAdmin)
 
-admin.site.register(models.ScoutBookRegistry, ScoutBookRegistryAdmin)
+admin.site.register(models.ScoutBook, ScoutBookRegistryAdmin)
 
-admin.site.register(models.UprawnienieRegistry, UprawkoAdmin)
+admin.site.register(models.Uprawnienie, UprawkoAdmin)
+
+admin.site.register(models.Adress)
+
+admin.site.register(models.Corresponcence, CorrespondenceAdmin)

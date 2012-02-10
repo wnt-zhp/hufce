@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 from django.db.models.query_utils import Q
+from django.forms.widgets import Select
+from django.utils.safestring import mark_safe
+
 
 __author__ = 'jb'
 
-from django.forms import ChoiceField, ModelForm
+from django.forms import ChoiceField, ModelForm, TypedChoiceField, ModelChoiceField
 
 from django.db import models
-from models import Dictionary
+from models import Dictionary, Adress
 
 class DictionayModelForm(ModelForm):
 
@@ -22,11 +25,39 @@ class DictionayModelForm(ModelForm):
 
 class ScoutForm(DictionayModelForm):
     class Meta:
-        from models import ScoutBookRegistry
-        model = ScoutBookRegistry
+        from models import ScoutBook
+        model = ScoutBook
     pass
 
 class UprawkoForm(DictionayModelForm):
     class Meta:
-        from models import UprawnienieRegistry
-        model = UprawnienieRegistry
+        from models import Uprawnienie
+        model = Uprawnienie
+
+class AdressFrorm(DictionayModelForm):
+    class Meta:
+        from models import Adress
+        model = Adress
+
+def build_corespondence_owner_queryset():
+    from django.contrib.auth.models import User
+    return User.objects.filter(Q(is_superuser = True) or Q(user_permissions__codename = "can_be_correspondence_owner")
+        or Q(groups__permissions__codename =  "can_be_correspondence_owner"))
+
+class AdressChoiceField(ModelChoiceField):
+    def label_from_instance(self, value):
+        if value is None:
+            return self.empty_label
+        return mark_safe(u"<strong>{adr.name}</strong> <em>Adres:</em> "
+                    u"{adr.street} {adr.no} {adr.postalcode} {adr.city.name}".format(adr = value))
+
+class CorrespondenceForm(DictionayModelForm):
+    class Meta:
+        from models import Corresponcence
+        model = Corresponcence
+
+
+    responsible = ModelChoiceField(build_corespondence_owner_queryset())
+    adress = AdressChoiceField(Adress.objects.all())
+
+
