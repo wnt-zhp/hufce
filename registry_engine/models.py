@@ -77,36 +77,44 @@ class RecordHistoryBase(models.Model):
 
 
 
-
-def create_record_types_abstract_model(AbstractModel, record_name, history_name, registry_meta = None, history_meta = None):
-    class Meta:
-        pass
-    if not registry_meta:
-        registry_meta = Meta
-    if not history_meta:
-        history_meta = Meta
-
-    Record = ModelBase(record_name, (AbstractModel, RecordBase), {
-        '__module__' : AbstractModel.__module__,
-        'Meta' : registry_meta,
-        'is_history_model' : False})
-    RecordHistory = ModelBase(history_name, (AbstractModel, RecordHistoryBase), {
-        "parent_instance" :
-            models.ForeignKey(Record, blank=False, null=False, related_name='history'),
-        '__module__' : AbstractModel.__module__,
-        'Meta' : history_meta,
-        'is_history_model' : True
-    })
-
-#    class Record(AbstractModel, RecordBase):
-#        pass
 #
-#    class RecordHistory(AbstractModel, RecordHistoryBase):
-#        parent_instance = models.ForeignKey(Record, blank=False, null=False, related_name='history')
-
-    Record.registry_child = RecordHistory
-
-    Record.__name__ = record_name
-    RecordHistory.__name__ = history_name
-
-    return Record, RecordHistory
+#def create_record_types_abstract_model(AbstractModel, record_name, history_name, registry_meta = None, history_meta = None):
+#    class Meta:
+#        pass
+#    if not registry_meta:
+#        registry_meta = Meta
+#    if not history_meta:
+#        history_meta = Meta
+#
+#    Record = ModelBase(record_name, (AbstractModel, RecordBase), {
+#        '__module__' : AbstractModel.__module__,
+#        'Meta' : registry_meta,
+#        'is_history_model' : False})
+#
+#
+#    history_attrs = {
+#            "parent_instance" :
+#                models.ForeignKey(Record, blank=False, null=False, related_name='history'),
+#            '__module__' : AbstractModel.__module__,
+#            'Meta' : history_meta,
+#            'is_history_model' : True
+#    }
+#
+#    for field in AbstractModel._meta.fields:
+#        if field.unique:
+#
+#
+#    RecordHistory = ModelBase(history_name, (AbstractModel, RecordHistoryBase), )
+#
+##    class Record(AbstractModel, RecordBase):
+##        pass
+##
+##    class RecordHistory(AbstractModel, RecordHistoryBase):
+##        parent_instance = models.ForeignKey(Record, blank=False, null=False, related_name='history')
+#
+#    Record.registry_child = RecordHistory
+#
+#    Record.__name__ = record_name
+#    RecordHistory.__name__ = history_name
+#
+#    return Record, RecordHistory
