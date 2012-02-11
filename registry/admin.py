@@ -48,16 +48,23 @@ class DictionaryAdmin(admin.ModelAdmin):
     list_filter = [
         'type', 'active'
     ]
+    readonly_fields = [
+            'user_changed'
+        ]
+
 
 class ScoutBookAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'name', 'surname', 'book_no', 'issue_date', 'troop', 'srodowisko'
+        'id', 'name', 'surname', 'book_no', 'issue_date', 'troop', 'srodowisko', 'user_changed'
     ]
     list_filter = [
         'srodowisko', 'troop'
     ]
     search_fields = [
         'name', 'surname', 'book_no', 'issue_date', 'troop__name', 'srodowisko__name'
+    ]
+    readonly_fields = [
+        'user_changed'
     ]
 
 
@@ -67,7 +74,7 @@ class ScoutBookHistoryAdminInline(admin.TabularInline):
     can_delete = False
     max_num = 0
     readonly_fields = [
-            'id', 'name', 'surname', 'book_no', 'issue_date', 'troop', 'srodowisko'
+            'id', 'name', 'surname', 'book_no', 'issue_date', 'troop', 'srodowisko', 'user_changed'
     ]
 
 class ScoutBookRegistryAdmin(ScoutBookAdmin):
@@ -93,14 +100,25 @@ class UprawkoAdmin(admin.ModelAdmin):
         'uprawnienie', 'srodowisko', 'rozkaz'
     ]
     search_fields = [
-        'id', 'name', 'surname', 'uprawnienie__name', 'rozkaz', 'srodowisko__name'
+        'id', 'name', 'surname', 'uprawnienie__name', 'rozkaz', 'srodowisko__name', 'date'
     ]
     form = forms.UprawkoForm
     inlines = [UprawkoHistoryInline]
 
 
-class ModelChoiceField(admin.ModelAdmin):
-    pass
+class AdressAdminInline(admin.TabularInline):
+    model = get_model("registry", "HistoricalAdress")
+    extra = 0
+    can_delete = False
+    max_num = 0
+    readonly_fields = [
+            'id', 'street', 'no', 'postalcode', 'city'
+    ]
+
+class AdressAdmin(admin.ModelAdmin):
+    search_fields = ['name', 'street', 'city']
+    form = forms.AdressForm
+    inlines = [AdressAdminInline]
 
 class CorrespondenceAdmin(admin.ModelAdmin):
     form = forms.CorrespondenceForm
@@ -115,6 +133,16 @@ class CorrespondenceAdmin(admin.ModelAdmin):
                 'remarks'
             )
 
+    search_fields = [
+        'number', 'data', 'adress__name', 'adress__street', 'adress__city',
+        'responsible__username', 'responsible__last_name', 'responsible__first__name'
+        'responsible__email', 'institution_no', 'remarks'
+    ]
+
+    list_filter = [
+        'status', 'responsible'
+    ]
+
 admin.site.register(models.Dictionary, DictionaryAdmin)
 
 #admin.site.register(models.ScoutBookHistoryAdminInline, ScoutBookAdmin)
@@ -123,6 +151,6 @@ admin.site.register(models.ScoutBook, ScoutBookRegistryAdmin)
 
 admin.site.register(models.Uprawnienie, UprawkoAdmin)
 
-admin.site.register(models.Adress)
+admin.site.register(models.Adress, AdressAdmin)
 
 admin.site.register(models.Corresponcence, CorrespondenceAdmin)

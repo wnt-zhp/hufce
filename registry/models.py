@@ -49,6 +49,8 @@ from const import CHAR_FIELD_MAX_LEN
 from datetime import datetime, date
 from historical.models import HistoricalRecords, HistoricalForeignKey
 
+from current_user.models import CurrentUserField
+
 from django.utils.translation import ugettext_lazy as _
 
 from django.utils.translation import ugettext_lazy
@@ -61,36 +63,23 @@ DICTIONARY_CHOICES = (
     ('corr-stat', "Status korespondencji")
 )
 
-class PLPostalCodeField(RegexField):
-    """
-    A form field that validates as Polish postal code.
-    Valid code is XX-XXX where X is digit.
-    """
-    default_error_messages = {
-        'invalid': _(u'Enter a postal code in the format XX-XXX.'),
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["max_length"] = None
-        kwargs["min_length"] = None
-        super(PLPostalCodeField, self).__init__(*args, regex = r'^\d{2}-\d{3}$', **kwargs)
-
-
 class Dictionary(models.Model):
+    class Meta:
+        verbose_name = u"Słownik"
+        verbose_name_plural = u"Słowniki"
 
     name = models.CharField(max_length=CHAR_FIELD_MAX_LEN, verbose_name="Nazwa")
     active = models.BooleanField(verbose_name="Aktywny", help_text="Czy dany rekord może być przypisywany do innych obiektów", default=True)
     type = models.CharField(max_length=CHAR_FIELD_MAX_LEN, choices=DICTIONARY_CHOICES)
-#    build_in = models.BooleanField(editable=False, default=False)
+    user_changed = CurrentUserField()
 
     def __unicode__(self):
-        if self.type == 'city':
-            return self.name
         return ' '.join(('+' if self.active else '-', self.name, self.type))
 #
 class ScoutBook(models.Model):
     class Meta:
-#        abstract = True
+        verbose_name = u"Ksiżeczka harcerska"
+        verbose_name_plural = u"Rejestr książeczek harcerskich"
         ordering = ['id']
 
     id = models.AutoField(u"Numer porządkowy", primary_key=True, editable=True)
@@ -102,7 +91,9 @@ class ScoutBook(models.Model):
     book_no = models.CharField(u"Numer książeczki", max_length=CHAR_FIELD_MAX_LEN, unique=True)
     issue_date = models.DateField(u"Data wydania", blank=True, null=True)
 
+    user_changed = CurrentUserField()
     historical = HistoricalRecords()
+
 
     def clean(self):
         if self.pk is None and self.issue_date is None:
@@ -110,6 +101,8 @@ class ScoutBook(models.Model):
 #
 class Uprawnienie(models.Model):
     class Meta:
+        verbose_name = u"Wydane uprwanienie"
+        verbose_name_plural = u"Rejestr wydanych uprawnień"
         ordering = ['id']
 
     id = models.AutoField(u"Numer porządkowy", primary_key=True, editable=True)
@@ -119,13 +112,26 @@ class Uprawnienie(models.Model):
                                     limit_choices_to={'type' : 'Uprawnienie', 'active' : True},
                                     related_name='+')
     rozkaz = models.CharField(u"Rozkaz", max_length=CHAR_FIELD_MAX_LEN)
+    date = models.DateField(u"Data przyznania", blank=True, null=False)
+
     srodowisko = models.ForeignKey('Dictionary', verbose_name=u"Środowisko",
                                     limit_choices_to={'type' : 'Srodowisko', 'active': True},
                                     related_name='+', blank=True, null=True)
+
+    user_changed = CurrentUserField()
     historical = HistoricalRecords()
+
+    def save(self, force_insert=False, force_update=False, using=None):
+        if self.date is None:
+            self.date = date.today()
+        super(Uprawnienie, self).save(force_insert, force_update, using)
 
 
 class Adress(models.Model):
+
+    class Meta:
+        verbose_name = "Adres"
+        verbose_name_plural = "Adresy"
 
     name = models.CharField("Nazwa odbiorcy", max_length=CHAR_FIELD_MAX_LEN)
 
@@ -134,6 +140,7 @@ class Adress(models.Model):
     city = models.ForeignKey("Dictionary", name="Miasto", related_name='+', limit_choices_to={'type' : 'city', 'active' : True},)
     postalcode = models.CharField(verbose_name = "Kod pocztowy", max_length=CHAR_FIELD_MAX_LEN)
 
+    user_changed = CurrentUserField()
     historical = HistoricalRecords()
 
     def __unicode__(self):
@@ -141,6 +148,8 @@ class Adress(models.Model):
 
 class Corresponcence(models.Model):
     class Meta:
+        verbose_name = "Korespondencja przychodząca"
+        verbose_name_plural = "Rejestr korespondencji przychodzącej"
         permissions = (
             ("can_be_correspondence_owner", u"Może być właścicielem korespondencji"),)
 
@@ -159,7 +168,7 @@ class Corresponcence(models.Model):
                                     blank=True, null=True
     )
 
-
+    user_changed = CurrentUserField()
     historical = HistoricalRecords()
 
     def save_base(self, raw=False, cls=None, origin=None, force_insert=False, force_update=False,

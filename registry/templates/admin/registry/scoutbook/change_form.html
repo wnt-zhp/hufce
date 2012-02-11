@@ -4,7 +4,10 @@
     {{ block.super }}
 
     <script type="text/javascript">
+        $(document).ready(function(){
+            $("#id_srodowisko").combobox();
+            $("#id_troop").combobox();
+        });
 
-        $("#id_city").combobox()
     </script>
 {% endblock %}

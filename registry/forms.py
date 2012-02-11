@@ -2,6 +2,7 @@
 from django.db.models.query_utils import Q
 from django.forms.widgets import Select
 from django.utils.safestring import mark_safe
+from django.contrib.localflavor.pl.forms import PLPostalCodeField
 
 
 __author__ = 'jb'
@@ -23,21 +24,42 @@ class DictionayModelForm(ModelForm):
                     if value and value not in model_field.choices:
                         model_field.queryset = Dictionary.objects.filter(Q(**f.rel.limit_choices_to) | Q(id = value.id))
 
+class TroopSrodowField(ModelChoiceField):
+    def label_from_instance(self, obj):
+            if obj is None:
+                return ''
+            return u"{obj.name} ({active})".format(obj = obj, active = "+" if obj.active else "-")
+
 class ScoutForm(DictionayModelForm):
     class Meta:
         from models import ScoutBook
         model = ScoutBook
-    pass
+
+    troop = TroopSrodowField(queryset=Dictionary.objects.filter(type = 'troop', active=True))
+    srodowisko = TroopSrodowField(queryset=Dictionary.objects.filter(type = 'Srodowisko', active=True), required=False)
 
 class UprawkoForm(DictionayModelForm):
     class Meta:
         from models import Uprawnienie
         model = Uprawnienie
 
-class AdressFrorm(DictionayModelForm):
+class CityField(ModelChoiceField):
+
+    def label_from_instance(self, obj):
+        if obj is None:
+            return ''
+        return obj.name
+
+
+
+class AdressForm(DictionayModelForm):
     class Meta:
         from models import Adress
         model = Adress
+
+    city = CityField(queryset=Dictionary.objects.filter(type = 'city', active = True))
+    postalcode = PLPostalCodeField()
+
 
 def build_corespondence_owner_queryset():
     from django.contrib.auth.models import User
