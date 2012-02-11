@@ -35,12 +35,16 @@ __LICENSE__ = u"""
     Place, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
+import os
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
+
+CURR_DIR = os.path.dirname(__file__)
 
 MANAGERS = ADMINS
 
@@ -52,9 +56,9 @@ DATABASES = {
         'PASSWORD': 'foo',
         'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '5432',                      # Set to empty string for default. Not used with sqlite3.
-        'TEST_NAME' : 'default_test'
+#        'TEST_NAME' : 'default_test'
     },
-    'default_test' : {
+    'test_default' : {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'hufce_test',
     }
@@ -97,7 +101,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = os.path.join(CURR_DIR, 'static')
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -118,7 +122,7 @@ STATICFILES_DIRS = (
 # List of finder classes that know how to find static files in
 # various locations.
 STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
+#    'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
@@ -139,6 +143,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'current_user.middleware.CurrentUserMiddleware',
 )
 
 ROOT_URLCONF = 'hufce.urls'
@@ -159,7 +164,7 @@ INSTALLED_APPS = (
     'hufcemain',
     'registry',
     'south',
-    'registry_engine'
+    'historical',
 )
 
 # A sample logging configuration. The only tangible logging
