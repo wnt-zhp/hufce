@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db.models.fields.related import ForeignKey
+from current_user.models import CurrentUserField
+from django.contrib.auth.models import User
 
 __author__ = 'jb'
 
@@ -267,6 +269,9 @@ class HistoricalRecords(object):
                 rel_to = _get_model(field.rel.to, model._meta.app_label)
                 field = _create_new_fk(field, KeyToHistoryMarker,
                                        to=rel_to._history_meta.HistoryModel, rel_class=rel_class)
+
+            if isinstance(field, CurrentUserField):
+                field = _create_new_fk(field, to=User)
 
             fields[field.name] = field
 
