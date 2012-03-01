@@ -120,6 +120,7 @@ class AdressAdmin(admin.ModelAdmin):
     search_fields = ['name', 'street', 'city']
     form = forms.AdressForm
     inlines = [AdressAdminInline]
+    readonly_fields = ('user_created', )
 
 class CorrespondenceAdmin(admin.ModelAdmin):
     form = forms.CorrespondenceForm
