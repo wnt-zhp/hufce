@@ -113,14 +113,14 @@ class AdressAdminInline(admin.TabularInline):
     can_delete = False
     max_num = 0
     readonly_fields = [
-            'id', 'street', 'no', 'postalcode', 'city'
+            'id', 'street', 'no', 'postalcode', 'city', 'history_type', 'history_user', 'user_changed', 'name'
     ]
 
 class AdressAdmin(admin.ModelAdmin):
     search_fields = ['name', 'street', 'city']
     form = forms.AdressForm
     inlines = [AdressAdminInline]
-    readonly_fields = ('user_created', )
+    readonly_fields = ('user_changed', )
 
 class CorrespondenceAdmin(admin.ModelAdmin):
     form = forms.CorrespondenceForm
