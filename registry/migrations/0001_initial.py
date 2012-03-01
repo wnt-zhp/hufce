@@ -14,6 +14,7 @@ class Migration(SchemaMigration):
             ('name', self.gf('django.db.models.fields.CharField')(max_length=250)),
             ('active', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('type', self.gf('django.db.models.fields.CharField')(max_length=250)),
+            ('user_changed', self.gf('current_user.models.CurrentUserField')(to=orm['auth.User'], null=True)),
         ))
         db.send_create_signal('registry', ['Dictionary'])
 
@@ -26,6 +27,7 @@ class Migration(SchemaMigration):
             ('book_no', self.gf('django.db.models.fields.CharField')(max_length=250, db_index=True)),
             ('issue_date', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
             ('id', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', blank=True, to=orm['registry.ScoutBook'])),
+            ('user_changed', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True)),
             ('history_id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('history_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, db_index=True, blank=True)),
             ('history_user', self.gf('current_user.models.CurrentUserField')(related_name='_scoutbook_history', null=True, to=orm['auth.User'])),
@@ -43,6 +45,7 @@ class Migration(SchemaMigration):
             ('troop', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
             ('book_no', self.gf('django.db.models.fields.CharField')(unique=True, max_length=250)),
             ('issue_date', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
+            ('user_changed', self.gf('current_user.models.CurrentUserField')(to=orm['auth.User'], null=True)),
         ))
         db.send_create_signal('registry', ['ScoutBook'])
 
@@ -52,8 +55,10 @@ class Migration(SchemaMigration):
             ('surname', self.gf('django.db.models.fields.CharField')(max_length=250)),
             ('uprawnienie', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
             ('rozkaz', self.gf('django.db.models.fields.CharField')(max_length=250)),
+            ('date', self.gf('django.db.models.fields.DateField')(blank=True)),
             ('srodowisko', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['registry.Dictionary'])),
             ('id', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', blank=True, to=orm['registry.Uprawnienie'])),
+            ('user_changed', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True)),
             ('history_id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('history_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, db_index=True, blank=True)),
             ('history_user', self.gf('current_user.models.CurrentUserField')(related_name='_uprawnienie_history', null=True, to=orm['auth.User'])),
@@ -69,7 +74,9 @@ class Migration(SchemaMigration):
             ('surname', self.gf('django.db.models.fields.CharField')(max_length=250)),
             ('uprawnienie', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
             ('rozkaz', self.gf('django.db.models.fields.CharField')(max_length=250)),
+            ('date', self.gf('django.db.models.fields.DateField')(blank=True)),
             ('srodowisko', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['registry.Dictionary'])),
+            ('user_changed', self.gf('current_user.models.CurrentUserField')(to=orm['auth.User'], null=True)),
         ))
         db.send_create_signal('registry', ['Uprawnienie'])
 
@@ -81,6 +88,7 @@ class Migration(SchemaMigration):
             ('city', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
             ('postalcode', self.gf('django.db.models.fields.CharField')(max_length=250)),
             ('id', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', blank=True, to=orm['registry.Adress'])),
+            ('user_changed', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True)),
             ('history_id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('history_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, db_index=True, blank=True)),
             ('history_user', self.gf('current_user.models.CurrentUserField')(related_name='_adress_history', null=True, to=orm['auth.User'])),
@@ -97,6 +105,7 @@ class Migration(SchemaMigration):
             ('street', self.gf('django.db.models.fields.CharField')(max_length=250)),
             ('city', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
             ('postalcode', self.gf('django.db.models.fields.CharField')(max_length=250)),
+            ('user_changed', self.gf('current_user.models.CurrentUserField')(to=orm['auth.User'], null=True)),
         ))
         db.send_create_signal('registry', ['Adress'])
 
@@ -110,6 +119,7 @@ class Migration(SchemaMigration):
             ('responsible', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['auth.User'])),
             ('number', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', blank=True, to=orm['registry.Corresponcence'])),
             ('adress', self.gf('historical.models.KeyToHistoryMarker')(to=orm['registry.HistoricalAdress'])),
+            ('user_changed', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True)),
             ('history_id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('history_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, db_index=True, blank=True)),
             ('history_user', self.gf('current_user.models.CurrentUserField')(related_name='_corresponcence_history', null=True, to=orm['auth.User'])),
@@ -128,6 +138,7 @@ class Migration(SchemaMigration):
             ('remarks', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('status', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['registry.Dictionary'])),
             ('responsible', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['auth.User'])),
+            ('user_changed', self.gf('current_user.models.CurrentUserField')(to=orm['auth.User'], null=True)),
         ))
         db.send_create_signal('registry', ['Corresponcence'])
 
@@ -206,7 +217,8 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'no': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'postalcode': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
-            'street': ('django.db.models.fields.CharField', [], {'max_length': '250'})
+            'street': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
+            'user_changed': ('current_user.models.CurrentUserField', [], {'to': "orm['auth.User']", 'null': 'True'})
         },
         'registry.corresponcence': {
             'Meta': {'object_name': 'Corresponcence'},
@@ -217,14 +229,16 @@ class Migration(SchemaMigration):
             'remarks': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'responsible': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': "orm['auth.User']"}),
             'status': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['registry.Dictionary']"}),
-            'subject': ('django.db.models.fields.TextField', [], {})
+            'subject': ('django.db.models.fields.TextField', [], {}),
+            'user_changed': ('current_user.models.CurrentUserField', [], {'to': "orm['auth.User']", 'null': 'True'})
         },
         'registry.dictionary': {
             'Meta': {'object_name': 'Dictionary'},
             'active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
-            'type': ('django.db.models.fields.CharField', [], {'max_length': '250'})
+            'type': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
+            'user_changed': ('current_user.models.CurrentUserField', [], {'to': "orm['auth.User']", 'null': 'True'})
         },
         'registry.historicaladress': {
             'Meta': {'ordering': "('-history_date',)", 'object_name': 'HistoricalAdress'},
@@ -238,7 +252,8 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'no': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'postalcode': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
-            'street': ('django.db.models.fields.CharField', [], {'max_length': '250'})
+            'street': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
+            'user_changed': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'})
         },
         'registry.historicalcorresponcence': {
             'Meta': {'ordering': "('-history_date',)", 'object_name': 'HistoricalCorresponcence'},
@@ -254,7 +269,8 @@ class Migration(SchemaMigration):
             'remarks': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'responsible': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': "orm['auth.User']"}),
             'status': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['registry.Dictionary']"}),
-            'subject': ('django.db.models.fields.TextField', [], {})
+            'subject': ('django.db.models.fields.TextField', [], {}),
+            'user_changed': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'})
         },
         'registry.historicalscoutbook': {
             'Meta': {'ordering': "('-history_date',)", 'object_name': 'HistoricalScoutBook'},
@@ -269,11 +285,13 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'srodowisko': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': "orm['registry.Dictionary']"}),
             'surname': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
-            'troop': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['registry.Dictionary']"})
+            'troop': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['registry.Dictionary']"}),
+            'user_changed': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'})
         },
         'registry.historicaluprawnienie': {
             'Meta': {'ordering': "('-history_date',)", 'object_name': 'HistoricalUprawnienie'},
             'current': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'date': ('django.db.models.fields.DateField', [], {'blank': 'True'}),
             'history_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'db_index': 'True', 'blank': 'True'}),
             'history_id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'history_type': ('django.db.models.fields.CharField', [], {'max_length': '1'}),
@@ -283,7 +301,8 @@ class Migration(SchemaMigration):
             'rozkaz': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'srodowisko': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': "orm['registry.Dictionary']"}),
             'surname': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
-            'uprawnienie': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['registry.Dictionary']"})
+            'uprawnienie': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['registry.Dictionary']"}),
+            'user_changed': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'})
         },
         'registry.scoutbook': {
             'Meta': {'ordering': "['id']", 'object_name': 'ScoutBook'},
@@ -293,16 +312,19 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'srodowisko': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': "orm['registry.Dictionary']"}),
             'surname': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
-            'troop': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['registry.Dictionary']"})
+            'troop': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['registry.Dictionary']"}),
+            'user_changed': ('current_user.models.CurrentUserField', [], {'to': "orm['auth.User']", 'null': 'True'})
         },
         'registry.uprawnienie': {
             'Meta': {'ordering': "['id']", 'object_name': 'Uprawnienie'},
+            'date': ('django.db.models.fields.DateField', [], {'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'rozkaz': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'srodowisko': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': "orm['registry.Dictionary']"}),
             'surname': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
-            'uprawnienie': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['registry.Dictionary']"})
+            'uprawnienie': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['registry.Dictionary']"}),
+            'user_changed': ('current_user.models.CurrentUserField', [], {'to': "orm['auth.User']", 'null': 'True'})
         }
     }
 
