@@ -102,6 +102,7 @@ class UprawkoAdmin(admin.ModelAdmin):
     search_fields = [
         'id', 'name', 'surname', 'uprawnienie__name', 'rozkaz', 'srodowisko__name', 'date'
     ]
+    readonly_fields = ('user_changed',)
     form = forms.UprawkoForm
     inlines = [UprawkoHistoryInline]
 
@@ -127,6 +128,7 @@ class CorrespondenceAdmin(admin.ModelAdmin):
                 'number',
                 'data',
                 'adress',
+                'subject',
                 'status',
                 'responsible',
                 'institution_no',
@@ -134,14 +136,23 @@ class CorrespondenceAdmin(admin.ModelAdmin):
             )
 
     search_fields = [
-        'number', 'data', 'adress__name', 'adress__street', 'adress__city',
-        'responsible__username', 'responsible__last_name', 'responsible__first__name'
+        'number', 'data', 'adress__name', 'adress__street', 'adress__city__name',
+        'responsible__username', 'responsible__last_name', 'responsible__first_name',
         'responsible__email', 'institution_no', 'remarks'
     ]
 
     list_filter = [
         'status', 'responsible'
     ]
+
+    list_display = [
+        'number', 'data', 'adressname', 'subject', 'status', 'responsible'
+    ]
+
+    def adressname(self, obj):
+        return obj.adress.name
+    adressname.admin_order_field = 'adress__name'
+    adressname.short_description = "Adresat"
 
 admin.site.register(models.Dictionary, DictionaryAdmin)
 
