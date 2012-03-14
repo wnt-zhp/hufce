@@ -116,11 +116,17 @@ class AdressAdminInline(admin.TabularInline):
             'id', 'street', 'no', 'postalcode', 'city', 'history_type', 'history_user', 'user_changed', 'name'
     ]
 
+
+
 class AdressAdmin(admin.ModelAdmin):
     search_fields = ['name', 'street', 'city']
     form = forms.AdressForm
     inlines = [AdressAdminInline]
     readonly_fields = ('user_changed', )
+
+    list_display = [
+                'name', 'city', 'street'
+    ]
 
 class CorrespondenceAdmin(admin.ModelAdmin):
     form = forms.CorrespondenceForm

@@ -63,8 +63,13 @@ class AdressForm(DictionayModelForm):
 
 def build_corespondence_owner_queryset():
     from django.contrib.auth.models import User
-    return User.objects.filter(Q(is_superuser = True) or Q(user_permissions__codename = "can_be_correspondence_owner")
-        or Q(groups__permissions__codename =  "can_be_correspondence_owner"))
+
+    queryset = User.objects.filter(Q(is_superuser=True) | Q(
+        user_permissions__codename="can_be_correspondence_owner") | Q(
+        groups__permissions__codename="can_be_correspondence_owner"))
+
+#    print queryset.query
+    return queryset
 
 class AdressChoiceField(ModelChoiceField):
     def label_from_instance(self, value):
