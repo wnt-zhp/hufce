@@ -35,7 +35,7 @@ class ScoutForm(DictionayModelForm):
         from models import ScoutBook
         model = ScoutBook
 
-    troop = TroopSrodowField(queryset=Dictionary.objects.filter(type = 'troop', active=True))
+    troop = TroopSrodowField(queryset=Dictionary.objects.filter(type = 'Troop', active=True))
     srodowisko = TroopSrodowField(queryset=Dictionary.objects.filter(type = 'Srodowisko', active=True), required=False)
 
 class UprawkoForm(DictionayModelForm):
