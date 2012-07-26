@@ -2,6 +2,7 @@
 from django.db.models.fields.related import ForeignKey
 from current_user.models import CurrentUserField
 from django.contrib.auth.models import User
+from django.dispatch.dispatcher import Signal
 
 __author__ = 'jb'
 
@@ -147,8 +148,6 @@ class KeyToHistoryMarker(ForeignKey):
     pass
 
 class HistoricalForeignKey(ForeignKey):
-
-
     def __init__(self, to, *largs, **kwargs):
         super(HistoricalForeignKey, self).__init__(to, *largs, **kwargs)
 
@@ -194,16 +193,25 @@ class HistoricalOptions(object):
     def ParentModel(self):
         return get_model(self.app_name, self.parent_model_name)
 
+    @property
+    def HistoryModelName(self):
+        return ".".join((self.app_name, self.history_object_name))
+
+    @property
+    def ParentModelName(self):
+        return ".".join((self.app_name, self.parent_model_name))
+
 class HistoricalRecords(object):
+
     def contribute_to_class(self, cls, name):
         self.manager_name = name
         models.signals.class_prepared.connect(self.finalize, sender=cls)
 
     def finalize(self, sender, **kwargs):
+
         self.app_name = sender._meta.app_label
         self.model_name = sender._meta.object_name
         history_model = self.create_history_model(sender)
-
         # The HistoricalRecords object will be discarded,
         # so the signal handlers can't use weak references.
         models.signals.post_save.connect(self.post_save, sender=sender,
@@ -213,7 +221,9 @@ class HistoricalRecords(object):
 
         descriptor = manager.HistoryDescriptor(history_model)
         setattr(sender, self.manager_name, descriptor)
-        setattr(sender, '_history_meta', self.create_history_options(sender, True))
+        if not hasattr(sender, '_history_meta'):
+            setattr(sender, '_history_meta', self.create_history_options(sender, True))
+
 
     def history_model_name(self, parent_model):
         return 'Historical%s' % parent_model._meta.object_name
@@ -268,7 +278,7 @@ class HistoricalRecords(object):
                 rel_class = type(field.rel)
                 rel_to = _get_model(field.rel.to, model._meta.app_label)
                 field = _create_new_fk(field, KeyToHistoryMarker,
-                                       to=rel_to._history_meta.HistoryModel, rel_class=rel_class)
+                                       to=rel_to._history_meta.HistoryModelName, rel_class=rel_class)
 
             if isinstance(field, CurrentUserField):
                 field = _create_new_fk(field, to=User)

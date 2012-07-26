@@ -1,5 +1,6 @@
 ## -*- coding: utf-8 -*-
 from django.contrib.localflavor.pl.forms import PLPostalCodeField
+from django.core.exceptions import ValidationError
 from django.db.models.expressions import F
 from django.db.models.sql.aggregates import Max
 from django.db.transaction import commit_unless_managed
@@ -112,11 +113,15 @@ class Uprawnienie(models.Model):
                                     limit_choices_to={'type' : 'Uprawnienie', 'active' : True},
                                     related_name='+')
     rozkaz = models.CharField(u"Rozkaz", max_length=CHAR_FIELD_MAX_LEN)
-    date = models.DateField(u"Data przyznania", blank=True, null=False)
+    date = models.DateField(u"Data przyznania", blank=True, null=True)
 
     srodowisko = models.ForeignKey('Dictionary', verbose_name=u"Środowisko",
                                     limit_choices_to={'type' : 'Srodowisko', 'active': True},
                                     related_name='+', blank=True, null=True)
+
+    druzyna = models.ForeignKey("Dictionary", verbose_name=u"Drużyna",
+                                            limit_choices_to={'type' : 'Troop', 'active' : True},
+                                            related_name="+", blank=True, null=True)
 
     user_changed = CurrentUserField()
     historical = HistoricalRecords()
@@ -126,6 +131,9 @@ class Uprawnienie(models.Model):
             self.date = date.today()
         super(Uprawnienie, self).save(force_insert, force_update, using)
 
+    def clean(self):
+        if self.srodowisko is None and self.druzyna is None:
+            raise ValidationError(u"Musisz podać albo drużyne albo środowisko")
 
 class Adress(models.Model):
 
@@ -137,7 +145,7 @@ class Adress(models.Model):
 
     no = models.CharField("Numer domu/mieszkania", max_length=CHAR_FIELD_MAX_LEN)
     street = models.CharField("Ulica", max_length=CHAR_FIELD_MAX_LEN)
-    city = models.ForeignKey("Dictionary", name="Miasto", related_name='+', limit_choices_to={'type' : 'city', 'active' : True},)
+    city = models.ForeignKey("Dictionary", verbose_name="Miasto", related_name='+', limit_choices_to={'type' : 'city', 'active' : True},)
     postalcode = models.CharField(verbose_name = "Kod pocztowy", max_length=CHAR_FIELD_MAX_LEN)
 
     user_changed = CurrentUserField()

@@ -5,3 +5,6 @@
 .*~
 #Pliki svn
 **.svn**
+.venv**
+.idea/**
+compiled_static/**
